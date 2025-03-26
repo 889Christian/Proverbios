@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Show - Levítico</title>
+    <style>
+
+	h1 {
+	background-color: #020b4d;
+	color: white;
+	margin: 0;
+	padding: 30px;
+	 }
+        body {
+	    padding: 10px 20px 30px 40px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0px;
+            background-color: #f0f8ff;
+            color: black;
+        }
+        .question-container {
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #87ceeb;
+            border-radius: 12px;
+            background-color: #ffffff;
+            max-width: 600px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+	    font-weight: bold;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #87ceeb;
+            color: black;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4682b4;
+        }
+        #answers button {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+        #answers button.selected {
+            background-color: #32cd32;
+            color: black;
+            font-weight: bold;
+        }
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffdddd;
+            padding: 40px;
+            border: 4px solid #ff0000;
+            border-radius: 24px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        #final-stats {
+            display: none;
+            margin-top: 20px;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Levítico</h1>
+
+    <div id="stats">
+        <p>Corretas: <span id="correctCount">0</span></p>
+        <p>Incorretas: <span id="wrongCount">0</span></p>
+        <p>Pendentes: <span id="pendingCount"></span></p>
+    </div>
+
+    <div class="question-container">
+        <p id="question"></p>
+        <div id="answers"></div>
+    </div>
+
+    <p id="reference"></p>
+    <p id="message"></p>
+
+    <button id="confirmButton">Confirmar Resposta</button>
+    <button id="nextButton">Próxima Pergunta</button>
+
+    <div id="popup">
+        <p>Leia mais a Bíblia!</p>
+        <button onclick="closePopup()">Fechar</button>
+    </div>
+
+    <div id="final-stats">
+        <h2>Resultados Finais</h2>
+        <p id="final-message"></p>
+        <p>Total de Corretas: <span id="finalCorrect"></span></p>
+        <p>Total de Incorretas: <span id="finalWrong"></span></p>
+    </div>
+
+    <script>
+        const questions = 
+[
+{ "question": "Qual é o princípio da sabedoria segundo Provérbios?", "answers": ["O temor do Senhor", "O conhecimento humano", "A experiência de vida"], "correct": "O temor do Senhor", "reference": "Provérbios 1:7" },  
+{ "question": "O que os pecadores tentam fazer com os justos, segundo Provérbios 1?", "answers": ["Persuadi-los a praticar o mal", "Ajudá-los a crescer", "Segui-los como exemplo"], "correct": "Persuadi-los a praticar o mal", "reference": "Provérbios 1:10" },  
+{ "question": "O que acontece com aqueles que rejeitam a sabedoria?", "answers": ["Sofrem as consequências de suas escolhas", "Ficam mais fortes", "São poupados dos problemas"], "correct": "Sofrem as consequências de suas escolhas", "reference": "Provérbios 1:31" },  
+{ "question": "O que devemos buscar como a prata e o tesouro escondido?", "answers": ["A sabedoria e o entendimento", "A fama e o sucesso", "O poder e a riqueza"], "correct": "A sabedoria e o entendimento", "reference": "Provérbios 2:4-5" },  
+{ "question": "O que a sabedoria guarda o justo de fazer?", "answers": ["Seguir o caminho dos maus", "Ser pobre", "Ter medo da vida"], "correct": "Seguir o caminho dos maus", "reference": "Provérbios 2:12" },  
+{ "question": "Quais benefícios vêm de guardar os mandamentos?", "answers": ["Vida longa e paz", "Riqueza e poder", "Fama e influência"], "correct": "Vida longa e paz", "reference": "Provérbios 3:1-2" },  
+{ "question": "O que não devemos apoiar para entender o caminho certo?", "answers": ["Nosso próprio entendimento", "O conselho dos sábios", "A palavra de Deus"], "correct": "Nosso próprio entendimento", "reference": "Provérbios 3:5" },  
+{ "question": "O que devemos fazer em relação ao Senhor com nossos bens?", "answers": ["Honrá-lo com as primícias", "Guardar tudo para nós", "Evitar ofertas"], "correct": "Honrá-lo com as primícias", "reference": "Provérbios 3:9" },  
+{ "question": "Quem o Senhor disciplina?", "answers": ["A quem ama", "A quem odeia", "A quem rejeita"], "correct": "A quem ama", "reference": "Provérbios 3:12" },  
+{ "question": "O que é mais preciosa do que rubis?", "answers": ["A sabedoria", "A fama", "A beleza"], "correct": "A sabedoria", "reference": "Provérbios 3:15" },  
+{ "question": "O que devemos fazer com as palavras do Senhor?", "answers": ["Guardá-las no coração", "Esquecê-las", "Modificá-las"], "correct": "Guardá-las no coração", "reference": "Provérbios 4:4" },  
+{ "question": "Qual caminho devemos seguir?", "answers": ["O caminho dos justos", "O caminho dos perversos", "O caminho da riqueza"], "correct": "O caminho dos justos", "reference": "Provérbios 4:18" },  
+{ "question": "O que devemos guardar acima de tudo?", "answers": ["O coração", "A riqueza", "A força"], "correct": "O coração", "reference": "Provérbios 4:23" },  
+{ "question": "Qual é o resultado de andar com a mulher imoral?", "answers": ["Destruição", "Prazer eterno", "Riquezas"], "correct": "Destruição", "reference": "Provérbios 5:3-5" },  
+{ "question": "O que o preguiçoso deve observar?", "answers": ["A formiga", "O leão", "O vento"], "correct": "A formiga", "reference": "Provérbios 6:6" },  
+{ "question": "O que o Senhor odeia?", "answers": ["Seis coisas, e a sétima Ele detesta", "Todas as atitudes humanas", "A oração dos justos"], "correct": "Seis coisas, e a sétima Ele detesta", "reference": "Provérbios 6:16" },  
+{ "question": "O que devemos escrever na tábua do nosso coração?", "answers": ["Os mandamentos", "Nossos desejos", "Nossos medos"], "correct": "Os mandamentos", "reference": "Provérbios 7:3" },  
+{ "question": "Quem clama nas ruas e praças?", "answers": ["A sabedoria", "O tolo", "O rico"], "correct": "A sabedoria", "reference": "Provérbios 8:1-3" },  
+{ "question": "O que é o temor do Senhor?", "answers": ["Odiar o mal", "Viver em medo constante", "Evitar pessoas más"], "correct": "Odiar o mal", "reference": "Provérbios 8:13" },  
+{ "question": "O que acontece com aqueles que amam a sabedoria?", "answers": ["São abençoados", "Ficam confusos", "São rejeitados"], "correct": "São abençoados", "reference": "Provérbios 8:17" },
+{ "question": "O que acontece com quem usa balanças desonestas?", "answers": ["É abominável ao Senhor", "Será recompensado", "Será engrandecido"], "correct": "É abominável ao Senhor", "reference": "Provérbios 11:1" },  
+{ "question": "O que conduz à honra, segundo Provérbios 11?", "answers": ["A humildade", "A riqueza", "A beleza"], "correct": "A humildade", "reference": "Provérbios 11:2" },  
+{ "question": "O que acontece com quem despreza a disciplina?", "answers": ["Prejudica a si mesmo", "É exaltado", "Obtém sabedoria"], "correct": "Prejudica a si mesmo", "reference": "Provérbios 12:1" },  
+{ "question": "Qual é a recompensa do justo, segundo Provérbios 12?", "answers": ["Bênçãos e segurança", "Riqueza e fama", "Poder sobre os ímpios"], "correct": "Bênçãos e segurança", "reference": "Provérbios 12:21" },  
+{ "question": "O que acontece com quem guarda sua boca?", "answers": ["Preserva sua vida", "Será esquecido", "Terá muitos amigos"], "correct": "Preserva sua vida", "reference": "Provérbios 13:3" },  
+{ "question": "O que acontece com quem anda com os sábios?", "answers": ["Se torna sábio", "Será desprezado", "Perde sua identidade"], "correct": "Se torna sábio", "reference": "Provérbios 13:20" },  
+{ "question": "O que é melhor do que grandes riquezas?", "answers": ["Um bom nome", "Muitas posses", "Fama e sucesso"], "correct": "Um bom nome", "reference": "Provérbios 14:24" },  
+{ "question": "Como o tolo reage à disciplina?", "answers": ["Despreza a correção", "Aprende rápido", "Melhora suas atitudes"], "correct": "Despreza a correção", "reference": "Provérbios 15:5" },  
+{ "question": "O que a resposta branda pode fazer?", "answers": ["Desviar o furor", "Aumentar a ira", "Causar confusão"], "correct": "Desviar o furor", "reference": "Provérbios 15:1" },  
+{ "question": "O que o Senhor pesa no homem?", "answers": ["Seu espírito", "Seu corpo", "Sua aparência"], "correct": "Seu espírito", "reference": "Provérbios 16:2" },  
+{ "question": "O que precede a queda?", "answers": ["A soberba", "A riqueza", "A pressa"], "correct": "A soberba", "reference": "Provérbios 16:18" },  
+{ "question": "O que um amigo faz em todo tempo?", "answers": ["Ama", "Critica", "Esconde a verdade"], "correct": "Ama", "reference": "Provérbios 17:17" },  
+{ "question": "O que controla a língua preserva?", "answers": ["Sua alma", "Seu orgulho", "Sua fama"], "correct": "Sua alma", "reference": "Provérbios 18:21" },  
+{ "question": "O que encontra quem acha uma esposa?", "answers": ["O favor do Senhor", "Um fardo pesado", "A ruína"], "correct": "O favor do Senhor", "reference": "Provérbios 18:22" },  
+{ "question": "O que acontece com quem despreza a disciplina?", "answers": ["Sofre as consequências", "É exaltado", "Se torna sábio"], "correct": "Sofre as consequências", "reference": "Provérbios 19:16" },  
+{ "question": "O que é melhor do que ser um homem de grande riqueza?", "answers": ["Ser um homem íntegro", "Ser um homem famoso", "Ser um homem poderoso"], "correct": "Ser um homem íntegro", "reference": "Provérbios 19:1" },  
+{ "question": "O que torna a pessoa sábia segundo Provérbios 19?", "answers": ["Ser paciente", "Ser impulsivo", "Ser arrogante"], "correct": "Ser paciente", "reference": "Provérbios 19:11" },  
+{ "question": "O que acontece ao filho que causa vergonha?", "answers": ["É a desgraça de seu pai", "Será exaltado", "Será próspero"], "correct": "É a desgraça de seu pai", "reference": "Provérbios 19:26" },  
+{ "question": "O que é melhor do que um tesouro precioso?", "answers": ["Uma língua sincera", "Uma casa luxuosa", "Muitos amigos"], "correct": "Uma língua sincera", "reference": "Provérbios 20:15" },  
+{ "question": "O que o preguiçoso faz no inverno?", "answers": ["Não ara a terra", "Trabalha dobrado", "Faz muitos planos"], "correct": "Não ara a terra", "reference": "Provérbios 20:4" },  
+{ "question": "O que distingue um jovem?", "answers": ["Sua conduta", "Sua aparência", "Sua força"], "correct": "Sua conduta", "reference": "Provérbios 20:11" },    
+{ "question": "O que é melhor do que sacrifícios?", "answers": ["Praticar a justiça e o juízo", "Fazer muitas ofertas", "Fazer votos solenes"], "correct": "Praticar a justiça e o juízo", "reference": "Provérbios 21:3" },  
+{ "question": "O que leva à vida, segundo Provérbios 21?", "answers": ["Seguir a justiça e a bondade", "Ter riquezas", "Ser famoso"], "correct": "Seguir a justiça e a bondade", "reference": "Provérbios 21:21" }, 
+{ "question": "O que o Senhor pesa no homem?", "answers": ["Seu coração", "Sua aparência", "Suas posses"], "correct": "Seu coração", "reference": "Provérbios 21:2" }, 
+{ "question": "O que protege o prudente?", "answers": ["A sabedoria", "A força física", "O dinheiro"], "correct": "A sabedoria", "reference": "Provérbios 22:3" }, 
+{ "question": "O que o preguiçoso diz para evitar o trabalho?", "answers": ["Há um leão lá fora", "Estou muito cansado", "O sol está forte"], "correct": "Há um leão lá fora", "reference": "Provérbios 22:13" },  
+{ "question": "O que faz um filho sábio?", "answers": ["Alegra seu pai", "Enriquece a família", "Domina sobre os outros"], "correct": "Alegra seu pai", "reference": "Provérbios 23:24" },  
+{ "question": "O que é doce para a alma?", "answers": ["A sabedoria", "O vinho", "O ouro"], "correct": "A sabedoria", "reference": "Provérbios 24:14" },   
+{ "question": "O que é melhor do que sacrifícios?", "answers": ["Praticar a justiça e o juízo", "Fazer muitas ofertas", "Fazer votos solenes"], "correct": "Praticar a justiça e o juízo", "reference": "Provérbios 21:3" },  
+{ "question": "O que leva à vida, segundo Provérbios 21?", "answers": ["Seguir a justiça e a bondade", "Ter riquezas", "Ser famoso"], "correct": "Seguir a justiça e a bondade", "reference": "Provérbios 21:21" },  
+{ "question": "O que protege o prudente?", "answers": ["A sabedoria", "A força física", "O dinheiro"], "correct": "A sabedoria", "reference": "Provérbios 22:3" },  
+{ "question": "O que devemos ensinar à criança?", "answers": ["O caminho em que deve andar", "A ser independente cedo", "A buscar riquezas"], "correct": "O caminho em que deve andar", "reference": "Provérbios 22:6" },  
+{ "question": "O que acontece com quem semeia a perversidade?", "answers": ["Colherá males", "Terá sucesso", "Será exaltado"], "correct": "Colherá males", "reference": "Provérbios 22:8" },  
+{ "question": "Com quem não devemos andar?", "answers": ["Com o iracundo", "Com o pobre", "Com o idoso"], "correct": "Com o iracundo", "reference": "Provérbios 22:24" },  
+{ "question": "O que é melhor do que muito ouro?", "answers": ["Ter um bom nome", "Ter amigos influentes", "Ter poder"], "correct": "Ter um bom nome", "reference": "Provérbios 22:1" },  
+{ "question": "O que não devemos remover?", "answers": ["Os marcos antigos", "Os governantes", "As tradições familiares"], "correct": "Os marcos antigos", "reference": "Provérbios 22:28" },  
+{ "question": "O que acontece com aquele que repreende?", "answers": ["Achará favor", "Será rejeitado", "Perderá amigos"], "correct": "Achará favor", "reference": "Provérbios 28:23" },  
+{ "question": "Quem será enriquecido?", "answers": ["O fiel", "O mentiroso", "O astuto"], "correct": "O fiel", "reference": "Provérbios 28:20" },  
+{ "question": "O que faz aquele que encobre suas transgressões?", "answers": ["Não prospera", "Será exaltado", "Receberá graça"], "correct": "Não prospera", "reference": "Provérbios 28:13" },  
+{ "question": "O que endurece o coração leva à?", "answers": ["Destruição", "Prosperidade", "Felicidade"], "correct": "Destruição", "reference": "Provérbios 28:14" },
+{ "question": "O que acontece ao que encobre suas transgressões?", "answers": ["Não prospera", "É exaltado", "Recebe honra"], "correct": "Não prospera", "reference": "Provérbios 28:13" },   
+{ "question": "O que acontece com aquele que confia no Senhor?", "answers": ["Será seguro", "Será confundido", "Será rejeitado"], "correct": "Será seguro", "reference": "Provérbios 29:25" },  
+{ "question": "O que é melhor do que um espírito arrogante?", "answers": ["Um espírito humilde", "Riquezas", "Força"], "correct": "Um espírito humilde", "reference": "Provérbios 29:23" },  
+{ "question": "Quem fala apressadamente com suas palavras é comparado a?", "answers": ["Um tolo", "Um sábio", "Um valente"], "correct": "Um tolo", "reference": "Provérbios 29:20" },  
+{ "question": "O que deve fazer aquele que tem sede de Deus?", "answers": ["Buscar a sabedoria", "Acumular riquezas", "Viver para si mesmo"], "correct": "Buscar a sabedoria", "reference": "Provérbios 30:5" },  
+{ "question": "Quantas coisas são insaciáveis, segundo Provérbios 30?", "answers": ["Quatro", "Sete", "Duas"], "correct": "Quatro", "reference": "Provérbios 30:15-16" },  
+{ "question": "O que é enganoso, segundo Provérbios 31?", "answers": ["A graça", "A justiça", "A humildade"], "correct": "A graça", "reference": "Provérbios 31:30" },  
+{ "question": "Quem é louvada segundo Provérbios 31?", "answers": ["A mulher que teme ao Senhor", "A mulher rica", "A mulher bonita"], "correct": "A mulher que teme ao Senhor", "reference": "Provérbios 31:30" },  
+{ "question": "O que a mulher virtuosa faz por seu marido?", "answers": ["Lhe faz bem", "Lhe traz fama", "Lhe dá riquezas"], "correct": "Lhe faz bem", "reference": "Provérbios 31:12" }  
+
+]; 
+
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let pendingCount = questions.length;
+        
+        const shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+
+        function updateStats() {
+            document.getElementById("correctCount").innerText = correctCount;
+            document.getElementById("wrongCount").innerText = wrongCount;
+            document.getElementById("pendingCount").innerText = pendingCount;
+        }
+
+        function loadQuestion() {
+            const questionData = shuffledQuestions[currentQuestionIndex];
+            document.getElementById("question").innerText = questionData.question;
+            document.getElementById("reference").innerText = "";
+            document.getElementById("message").innerText = "";
+            const answersContainer = document.getElementById("answers");
+            answersContainer.innerHTML = "";
+
+            questionData.answers.forEach(answer => {
+                const button = document.createElement("button");
+                button.innerText = answer;
+                button.onclick = () => selectAnswer(button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedButton) {
+            const buttons = document.querySelectorAll("#answers button");
+            buttons.forEach(button => button.classList.remove("selected"));
+            selectedButton.classList.add("selected");
+        }
+
+        function confirmAnswer() {
+            const selectedButton = document.querySelector("#answers button.selected");
+            if (!selectedButton) {
+                alert("Por favor, selecione uma resposta!");
+                return;
+            }
+
+            const selectedAnswer = selectedButton.innerText;
+            const questionData = shuffledQuestions[currentQuestionIndex];
+
+            if (selectedAnswer === questionData.correct) {
+                correctCount++;
+                document.getElementById("message").innerText = `Certa Resposta! Referência: (${questionData.reference}).`;
+                document.getElementById("message").style.color = "green";
+            } else {
+                wrongCount++;
+                document.getElementById("message").innerText = `Resposta errada! A correta é "${questionData.correct}" (${questionData.reference}).`;
+                document.getElementById("message").style.color = "red";
+                document.getElementById("popup").style.display = "block";
+            }
+
+            
+            pendingCount--;
+            updateStats();
+
+            document.getElementById("confirmButton").disabled = true;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < shuffledQuestions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+                document.getElementById("confirmButton").disabled = false;
+            } else {
+                showFinalStats();
+            }
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function showFinalStats() {
+            const finalMessage = document.getElementById("final-message");
+            const finalCorrect = document.getElementById("finalCorrect");
+            const finalWrong = document.getElementById("finalWrong");
+
+            finalCorrect.innerText = correctCount;
+            finalWrong.innerText = wrongCount;
+
+            if (correctCount > wrongCount) {
+                finalMessage.innerText = "Parabéns! Você está acima da média!";
+            } else {
+                finalMessage.innerText = "Leia mais a Bíblia!";
+            }
+
+            document.getElementById("final-stats").style.display = "block";
+        }
+
+        document.getElementById("confirmButton").addEventListener("click", confirmAnswer);
+        document.getElementById("nextButton").addEventListener("click", nextQuestion);
+
+        updateStats();
+        loadQuestion();
+    </script>
+</body>
+</html>
